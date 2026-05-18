@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Returns structured JSON with playlist title, entry count, and entry details (id, title, url, duration, uploader)
   - Handles playlists, channels, and single video URLs gracefully
 
+### Fixed
+- Added `@types/node` dev dependency for proper Node.js type support
+- Pinned TypeScript to `~5.7.0` to avoid breaking changes in TypeScript 6.x
+
 ---
 
 ## [0.8.4] - 2026-01-04
@@ -255,6 +259,9 @@ This release follows the [MCP Server Development Best Practices](https://modelco
 
 ---
 
-[0.7.0]: https://github.com/kevinwatt/yt-dlp-mcp/compare/v0.6.28...v0.7.0
-[0.6.28]: https://github.com/kevinwatt/yt-dlp-mcp/compare/v0.6.0...v0.6.28
-[0.6.0]: https://github.com/kevinwatt/yt-dlp-mcp/releases/tag/v0.6.0
+[0.9.0]: https://github.com/maciejbuchert/yt-dlp-mcp/compare/v0.8.4...v0.9.0
+[0.8.4]: https://github.com/maciejbuchert/yt-dlp-mcp/compare/v0.8.3...v0.8.4
+[0.8.3]: https://github.com/maciejbuchert/yt-dlp-mcp/compare/v0.7.0...v0.8.3
+[0.7.0]: https://github.com/maciejbuchert/yt-dlp-mcp/compare/v0.6.28...v0.7.0
+[0.6.28]: https://github.com/maciejbuchert/yt-dlp-mcp/compare/v0.6.0...v0.6.28
+[0.6.0]: https://github.com/maciejbuchert/yt-dlp-mcp/releases/tag/v0.6.0
