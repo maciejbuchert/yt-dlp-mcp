@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.0] - 2026-05-18
+
+### Added
+- **New Tool**: `ytdlp_list_playlist_entries` - List entries in a playlist or channel using `--flat-playlist` for fast enumeration without downloading content
+  - Supports `limit` and `start` parameters for pagination
+  - Returns structured JSON with playlist title, entry count, and entry details (id, title, url, duration, uploader)
+  - Handles playlists, channels, and single video URLs gracefully
+
+---
+
 ## [0.8.4] - 2026-01-04
 
 ### Fixed
