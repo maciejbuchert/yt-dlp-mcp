@@ -331,6 +331,26 @@ Get human-readable metadata summary
 </tr>
 </table>
 
+### 📋 Playlist & Channel
+
+<table>
+<tr>
+<th width="30%">Tool</th>
+<th width="70%">Description</th>
+</tr>
+<tr>
+<td><code>ytdlp_list_playlist_entries</code></td>
+<td>
+
+List entries in a playlist or channel without downloading content
+- **Parameters**: `url`, `limit` (optional), `start` (optional), `includeMetadata` (optional)
+- **Returns**: JSON with playlist title, entry count, and array of entries (id, title, url, duration, uploader)
+- **Uses**: `--flat-playlist` for fast enumeration without full video probing
+
+</td>
+</tr>
+</table>
+
 ---
 
 ## 💡 Usage Examples

@@ -20,6 +20,7 @@ import { listSubtitles, downloadSubtitles, downloadTranscript } from "./modules/
 import { searchVideos } from "./modules/search.js";
 import { getVideoMetadata, getVideoMetadataSummary } from "./modules/metadata.js";
 import { getVideoComments, getVideoCommentsSummary } from "./modules/comments.js";
+import { listPlaylistEntries } from "./modules/playlist.js";
 
 const VERSION = '0.8.4';
 
@@ -152,6 +153,26 @@ const GetVideoCommentsSummarySchema = z.object({
     .max(50, "Cannot exceed 50 comments for summary")
     .default(10)
     .describe("Maximum number of comments to include in summary (1-50, default: 10)"),
+}).strict();
+
+const ListPlaylistEntriesSchema = z.object({
+  url: z.string()
+    .url("Must be a valid URL")
+    .describe("URL of the playlist, channel, or video"),
+  limit: z.coerce.number()
+    .int("Must be a whole number")
+    .min(1, "Must return at least 1 entry")
+    .max(500, "Cannot exceed 500 entries")
+    .optional()
+    .describe("Maximum number of entries to return (1-500)"),
+  start: z.coerce.number()
+    .int("Must be a whole number")
+    .min(1, "Must start at index 1 or greater")
+    .optional()
+    .describe("Starting index (1-based) for pagination"),
+  includeMetadata: z.boolean()
+    .default(false)
+    .describe("When true, include extended fields available in flat mode"),
 }).strict();
 
 /**
@@ -568,6 +589,44 @@ Error Handling:
           openWorldHint: true
         }
       },
+      {
+        name: "ytdlp_list_playlist_entries",
+        description: `List entries in a playlist or channel without downloading content.
+
+This tool uses yt-dlp's --flat-playlist option to quickly enumerate videos in a playlist or channel. It extracts minimal per-entry metadata (id, title, url, duration, uploader) without fully probing each video, making it significantly faster than full extraction.
+
+Args:
+  - url (string): Full playlist, channel, or video URL
+  - limit (number, optional): Maximum number of entries to return (1-500)
+  - start (number, optional): Starting index (1-based) for pagination
+  - includeMetadata (boolean, optional): When true, include extended fields (default: false)
+
+Returns:
+  JSON object with:
+  - playlistTitle: Title of the playlist (if available)
+  - entryCount: Number of entries returned
+  - entries: Array of entry objects containing:
+    - id: Video identifier
+    - title: Video title
+    - url: Video URL
+    - duration: Duration in seconds
+    - uploader: Channel/uploader name
+
+Use when: You need to enumerate videos in a playlist or channel quickly
+Don't use when: You need full metadata for a single video (use ytdlp_get_video_metadata)
+
+Error Handling:
+  - "Invalid or unsupported URL format" for bad URLs
+  - "Unsupported URL or no playlist found" for non-playlist URLs
+  - "Playlist is private or unavailable" for restricted content`,
+        inputSchema: ListPlaylistEntriesSchema,
+        annotations: {
+          readOnlyHint: true,
+          destructiveHint: false,
+          idempotentHint: true,
+          openWorldHint: true
+        }
+      },
     ],
   };
 });
@@ -617,6 +676,9 @@ server.setRequestHandler(
       sortOrder?: "top" | "new";
       fields?: string[];
       uploadDateFilter?: string;
+      limit?: number;
+      start?: number;
+      includeMetadata?: boolean;
     };
 
     // Validate inputs with Zod schemas
@@ -686,6 +748,12 @@ server.setRequestHandler(
         return handleToolExecution(
           () => getVideoCommentsSummary(validated.url, validated.maxComments, CONFIG),
           "Error generating video comments summary"
+        );
+      } else if (toolName === "ytdlp_list_playlist_entries") {
+        const validated = ListPlaylistEntriesSchema.parse(args);
+        return handleToolExecution(
+          () => listPlaylistEntries(validated.url, validated.limit, validated.start, validated.includeMetadata, CONFIG),
+          "Error listing playlist entries"
         );
       } else {
         return {
