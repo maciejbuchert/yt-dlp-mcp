@@ -4,7 +4,7 @@
 
 **A powerful MCP server that brings video platform capabilities to your AI agents**
 
-[![npm version](https://img.shields.io/npm/v/@kevinwatt/yt-dlp-mcp.svg)](https://www.npmjs.com/package/@kevinwatt/yt-dlp-mcp)
+[![npm version](https://img.shields.io/npm/v/@maciejbuchert/yt-dlp-mcp.svg)](https://www.npmjs.com/package/@maciejbuchert/yt-dlp-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
@@ -100,7 +100,7 @@ Add the following config to your MCP client:
   "mcpServers": {
     "yt-dlp": {
       "command": "npx",
-      "args": ["-y", "@kevinwatt/yt-dlp-mcp@latest"]
+      "args": ["-y", "@maciejbuchert/yt-dlp-mcp@latest"]
     }
   }
 }
@@ -124,7 +124,7 @@ Add the following config to your MCP client:
 Use the Claude Code CLI to add the yt-dlp MCP server ([guide](https://docs.anthropic.com/en/docs/claude-code/mcp)):
 
 ```bash
-claude mcp add yt-dlp npx @kevinwatt/yt-dlp-mcp@latest
+claude mcp add yt-dlp npx @maciejbuchert/yt-dlp-mcp@latest
 ```
 
 </details>
@@ -143,7 +143,7 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "yt-dlp": {
       "command": "npx",
-      "args": ["-y", "@kevinwatt/yt-dlp-mcp@latest"]
+      "args": ["-y", "@maciejbuchert/yt-dlp-mcp@latest"]
     }
   }
 }
@@ -164,7 +164,7 @@ Go to `Cursor Settings` -> `MCP` -> `New MCP Server`. Use the config provided ab
 Install via the VS Code CLI:
 
 ```bash
-code --add-mcp '{"name":"yt-dlp","command":"npx","args":["-y","@kevinwatt/yt-dlp-mcp@latest"]}'
+code --add-mcp '{"name":"yt-dlp","command":"npx","args":["-y","@maciejbuchert/yt-dlp-mcp@latest"]}'
 ```
 
 Or follow the [MCP install guide](https://code.visualstudio.com/docs/copilot/chat/mcp-servers#_add-an-mcp-server) with the standard config from above.
@@ -202,7 +202,7 @@ Go to `Settings | Tools | AI Assistant | Model Context Protocol (MCP)` -> `Add`.
 ### Manual Installation
 
 ```bash
-npm install -g @kevinwatt/yt-dlp-mcp
+npm install -g @maciejbuchert/yt-dlp-mcp
 ```
 
 ---
@@ -447,7 +447,7 @@ YTDLP_COOKIES_FILE=/path/to/cookies.txt
   "mcpServers": {
     "yt-dlp": {
       "command": "npx",
-      "args": ["-y", "@kevinwatt/yt-dlp-mcp@latest"],
+      "args": ["-y", "@maciejbuchert/yt-dlp-mcp@latest"],
       "env": {
         "YTDLP_COOKIES_FROM_BROWSER": "chrome"
       }
