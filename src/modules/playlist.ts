@@ -132,8 +132,6 @@ export async function listPlaylistEntries(
             id: entry.id || undefined,
             title: entry.title || undefined,
             url: entry.url || entry.webpage_url || undefined,
-            duration: entry.duration || undefined,
-            uploader: entry.uploader || entry.channel || undefined,
           });
         }
       } catch {
