@@ -23,7 +23,7 @@ import { getVideoMetadata, getVideoMetadataSummary } from "./modules/metadata.js
 import { getVideoComments, getVideoCommentsSummary } from "./modules/comments.js";
 import { listPlaylistEntries } from "./modules/playlist.js";
 
-const VERSION = '0.9.0';
+const VERSION = '0.9.1';
 
 // Response format enum
 enum ResponseFormat {
@@ -731,10 +731,6 @@ server.setRequestHandler(
                 type: "audio" as const,
                 data: result.data,
                 mimeType: result.mimeType,
-              },
-              {
-                type: "text" as const,
-                text: `Audio successfully downloaded as "${result.filename}" to ${CONFIG.file.downloadsDir}\nFile URL: ${result.fileUrl}`,
               },
             ]
           };
