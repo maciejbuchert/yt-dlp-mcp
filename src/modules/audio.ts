@@ -1,8 +1,25 @@
-import { readdirSync } from "fs";
+import { readdirSync, readFileSync } from "fs";
 import * as path from "path";
+import { pathToFileURL } from "url";
 import type { Config } from "../config.js";
 import { sanitizeFilename, getCookieArgs } from "../config.js";
 import { _spawnPromise, validateUrl, getFormattedTimestamp, isYouTubeUrl } from "./utils.js";
+
+/**
+ * Result of a successful audio download.
+ */
+export interface AudioDownloadResult {
+  /** The downloaded filename */
+  filename: string;
+  /** Full absolute path to the downloaded file */
+  filePath: string;
+  /** file:// URL for the downloaded file */
+  fileUrl: string;
+  /** Base64-encoded audio data */
+  data: string;
+  /** MIME type of the audio file */
+  mimeType: string;
+}
 
 /**
  * Downloads audio from a video URL in the best available quality.
@@ -28,7 +45,7 @@ import { _spawnPromise, validateUrl, getFormattedTimestamp, isYouTubeUrl } from 
  * console.log(customResult);
  * ```
  */
-export async function downloadAudio(url: string, config: Config): Promise<string> {
+export async function downloadAudio(url: string, config: Config, outputFilename?: string): Promise<AudioDownloadResult> {
   const timestamp = getFormattedTimestamp();
 
   if (!validateUrl(url)) {
@@ -36,10 +53,19 @@ export async function downloadAudio(url: string, config: Config): Promise<string
   }
 
   try {
-    const outputTemplate = path.join(
-      config.file.downloadsDir,
-      sanitizeFilename(`%(title)s [%(id)s] ${timestamp}`, config.file) + '.%(ext)s'
-    );
+    let outputTemplate: string;
+    let sanitizedBase: string | undefined;
+    if (outputFilename) {
+      // Use the provided filename, ensuring it has no extension (yt-dlp adds it)
+      const baseName = outputFilename.replace(/\.[^.]+$/, '');
+      sanitizedBase = sanitizeFilename(baseName, config.file);
+      outputTemplate = path.join(config.file.downloadsDir, sanitizedBase + '.%(ext)s');
+    } else {
+      outputTemplate = path.join(
+        config.file.downloadsDir,
+        sanitizeFilename(`%(title)s [%(id)s] ${timestamp}`, config.file) + '.%(ext)s'
+      );
+    }
 
     const format = isYouTubeUrl(url)
       ? "140/bestaudio[ext=m4a]/bestaudio"
@@ -59,11 +85,42 @@ export async function downloadAudio(url: string, config: Config): Promise<string
     ]);
 
     const files = readdirSync(config.file.downloadsDir);
-    const downloadedFile = files.find(file => file.includes(timestamp));
+    let downloadedFile: string | undefined;
+    if (sanitizedBase) {
+      downloadedFile = files.find(file => file.startsWith(sanitizedBase));
+    } else {
+      downloadedFile = files.find(file => file.includes(timestamp));
+    }
     if (!downloadedFile) {
       throw new Error("Download completed but file not found. Check Downloads folder permissions.");
     }
-    return `Audio successfully downloaded as "${downloadedFile}" to ${config.file.downloadsDir}`;
+    const fullPath = path.join(config.file.downloadsDir, downloadedFile);
+    const fileUrl = pathToFileURL(fullPath).href;
+
+    // Determine MIME type from extension
+    const ext = path.extname(downloadedFile).toLowerCase();
+    let mimeType: string;
+    switch (ext) {
+      case '.m4a': mimeType = 'audio/mp4'; break;
+      case '.mp3': mimeType = 'audio/mpeg'; break;
+      case '.ogg': mimeType = 'audio/ogg'; break;
+      case '.opus': mimeType = 'audio/opus'; break;
+      case '.wav': mimeType = 'audio/wav'; break;
+      case '.webm': mimeType = 'audio/webm'; break;
+      default: mimeType = 'audio/mpeg'; break;
+    }
+
+    // Read file and encode as base64
+    const audioData = readFileSync(fullPath);
+    const base64Data = audioData.toString('base64');
+
+    return {
+      filename: downloadedFile,
+      filePath: fullPath,
+      fileUrl,
+      data: base64Data,
+      mimeType,
+    };
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes("Unsupported URL") || error.message.includes("extractor")) {
