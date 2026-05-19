@@ -16,6 +16,7 @@ import { CONFIG } from "./config.js";
 import { _spawnPromise, safeCleanup } from "./modules/utils.js";
 import { downloadVideo } from "./modules/video.js";
 import { downloadAudio } from "./modules/audio.js";
+import type { AudioDownloadResult } from "./modules/audio.js";
 import { listSubtitles, downloadSubtitles, downloadTranscript } from "./modules/subtitle.js";
 import { searchVideos } from "./modules/search.js";
 import { getVideoMetadata, getVideoMetadataSummary } from "./modules/metadata.js";
@@ -722,10 +723,28 @@ server.setRequestHandler(
         );
       } else if (toolName === "ytdlp_download_audio") {
         const validated = DownloadAudioSchema.parse(args);
-        return handleToolExecution(
-          () => downloadAudio(validated.url, CONFIG, validated.outputFilename),
-          "Error downloading audio"
-        );
+        try {
+          const result: AudioDownloadResult = await downloadAudio(validated.url, CONFIG, validated.outputFilename);
+          return {
+            content: [
+              {
+                type: "audio" as const,
+                data: result.data,
+                mimeType: result.mimeType,
+              },
+              {
+                type: "text" as const,
+                text: `Audio successfully downloaded as "${result.filename}" to ${CONFIG.file.downloadsDir}\nFile URL: ${result.fileUrl}`,
+              },
+            ]
+          };
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          return {
+            content: [{ type: "text" as const, text: `Error downloading audio: ${errorMessage}` }],
+            isError: true
+          };
+        }
       } else if (toolName === "ytdlp_download_transcript") {
         const validated = DownloadTranscriptSchema.parse(args);
         return handleToolExecution(

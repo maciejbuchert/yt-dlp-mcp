@@ -28,7 +28,11 @@ describe('downloadAudio', () => {
 
   test('downloads audio successfully from YouTube', async () => {
     const result = await downloadAudio(testUrl, testConfig);
-    expect(result).toContain('Audio successfully downloaded');
+    expect(result.filename).toBeDefined();
+    expect(result.filePath).toBeDefined();
+    expect(result.fileUrl).toMatch(/^file:\/\//);
+    expect(result.data).toBeDefined();
+    expect(result.mimeType).toMatch(/^audio\//);
     
     const files = await fs.promises.readdir(testConfig.file.downloadsDir);
     expect(files.length).toBeGreaterThan(0);
