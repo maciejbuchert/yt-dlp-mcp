@@ -101,6 +101,11 @@ const DownloadAudioSchema = z.object({
   url: z.string()
     .url("Must be a valid URL")
     .describe("URL of the video"),
+  outputFilename: z.string()
+    .min(1, "Filename cannot be empty")
+    .max(200, "Filename must not exceed 200 characters")
+    .optional()
+    .describe("Custom output filename for the downloaded audio (without extension). If not provided, uses video title."),
 }).strict();
 
 const DownloadTranscriptSchema = z.object({
@@ -386,12 +391,14 @@ This tool extracts audio tracks from video content and saves them as audio files
 
 Args:
   - url (string): Full video URL from any supported platform
+  - outputFilename (string, optional): Custom output filename (without extension). If not provided, uses video title.
 
 Returns:
   Success message with:
   - Downloaded audio filename
   - Destination folder path
   - Audio format (m4a/mp3)
+  - Full file URL for downloading
 
 Use when: User wants audio-only file (music, podcasts, speeches)
 Don't use when: User needs video with visuals (use ytdlp_download_video) or just text transcript (use ytdlp_download_transcript)
@@ -716,7 +723,7 @@ server.setRequestHandler(
       } else if (toolName === "ytdlp_download_audio") {
         const validated = DownloadAudioSchema.parse(args);
         return handleToolExecution(
-          () => downloadAudio(validated.url, CONFIG),
+          () => downloadAudio(validated.url, CONFIG, validated.outputFilename),
           "Error downloading audio"
         );
       } else if (toolName === "ytdlp_download_transcript") {

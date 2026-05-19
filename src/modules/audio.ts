@@ -1,5 +1,6 @@
 import { readdirSync } from "fs";
 import * as path from "path";
+import { pathToFileURL } from "url";
 import type { Config } from "../config.js";
 import { sanitizeFilename, getCookieArgs } from "../config.js";
 import { _spawnPromise, validateUrl, getFormattedTimestamp, isYouTubeUrl } from "./utils.js";
@@ -28,7 +29,7 @@ import { _spawnPromise, validateUrl, getFormattedTimestamp, isYouTubeUrl } from 
  * console.log(customResult);
  * ```
  */
-export async function downloadAudio(url: string, config: Config): Promise<string> {
+export async function downloadAudio(url: string, config: Config, outputFilename?: string): Promise<string> {
   const timestamp = getFormattedTimestamp();
 
   if (!validateUrl(url)) {
@@ -36,10 +37,19 @@ export async function downloadAudio(url: string, config: Config): Promise<string
   }
 
   try {
-    const outputTemplate = path.join(
-      config.file.downloadsDir,
-      sanitizeFilename(`%(title)s [%(id)s] ${timestamp}`, config.file) + '.%(ext)s'
-    );
+    let outputTemplate: string;
+    let sanitizedBase: string | undefined;
+    if (outputFilename) {
+      // Use the provided filename, ensuring it has no extension (yt-dlp adds it)
+      const baseName = outputFilename.replace(/\.[^.]+$/, '');
+      sanitizedBase = sanitizeFilename(baseName, config.file);
+      outputTemplate = path.join(config.file.downloadsDir, sanitizedBase + '.%(ext)s');
+    } else {
+      outputTemplate = path.join(
+        config.file.downloadsDir,
+        sanitizeFilename(`%(title)s [%(id)s] ${timestamp}`, config.file) + '.%(ext)s'
+      );
+    }
 
     const format = isYouTubeUrl(url)
       ? "140/bestaudio[ext=m4a]/bestaudio"
@@ -59,11 +69,18 @@ export async function downloadAudio(url: string, config: Config): Promise<string
     ]);
 
     const files = readdirSync(config.file.downloadsDir);
-    const downloadedFile = files.find(file => file.includes(timestamp));
+    let downloadedFile: string | undefined;
+    if (sanitizedBase) {
+      downloadedFile = files.find(file => file.startsWith(sanitizedBase));
+    } else {
+      downloadedFile = files.find(file => file.includes(timestamp));
+    }
     if (!downloadedFile) {
       throw new Error("Download completed but file not found. Check Downloads folder permissions.");
     }
-    return `Audio successfully downloaded as "${downloadedFile}" to ${config.file.downloadsDir}`;
+    const fullPath = path.join(config.file.downloadsDir, downloadedFile);
+    const fileUrl = pathToFileURL(fullPath).href;
+    return `Audio successfully downloaded as "${downloadedFile}" to ${config.file.downloadsDir}\nFile URL: ${fileUrl}`;
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes("Unsupported URL") || error.message.includes("extractor")) {

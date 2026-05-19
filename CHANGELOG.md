@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **`ytdlp_download_audio`**: Added optional `outputFilename` parameter to set custom output file name
+- **`ytdlp_download_audio`**: Now returns full file URL (`file://` path) in the response for easy downloading
+
 ---
 
 ## [0.9.0] - 2026-05-18
